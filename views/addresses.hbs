@@ -1,0 +1,159 @@
+<!-- WRAPPER -->
+	<div id="wrapper">
+		{{> menu}}
+		<!-- MAIN -->
+		<div class="main">
+			<!-- MAIN CONTENT -->
+			<div class="main-content">
+				<div class="container-fluid">
+					{{> headline}}
+
+					<div class="row">
+						<div class="col-md-12">
+							
+							<!-- CONDENSED TABLE -->
+							<div class="panel" id="mis-suscripciones">
+								<div class="panel-heading">
+									<h3 class="panel-title"> Actividad Reciente</h3>
+									<div class="right">
+										<button type="button" class="btn-toggle-collapse"><i class="lnr lnr-chevron-up"></i></button>
+
+									</div>
+									<br>
+									<ul id="myTab" class="nav nav-tabs bar_tabs" role="tablist">
+				                        <li role="presentation" class="active"><a href="#todas" id="home-tab" role="tab" data-toggle="tab" aria-expanded="true">Activas</a>
+				                        </li>
+				                        <li role="presentation" class=""><a href="#bitcoin" role="tab" id="profile-tab" data-toggle="tab" aria-expanded="false">Inactivas</a>
+				                        </li>
+
+				                  </ul>
+				                  <br>
+				                  <a href="/newaddress" class="btn btn-primary"><i class="fa fa-plus-square"></i> Agregar</a>
+								</div>
+
+								<div class="panel-body no-padding">
+
+								<div id="myTabContent" class="tab-content">
+									<div role="tabpanel" class="tab-pane fade active in" id="todas" aria-labelledby="home-tab">
+
+									<div class="table-responsive ">
+									{{#if activas}}
+										<table class="table table-hover table-condensed">
+											<thead>
+												<tr>
+													<th>Direccion</th>
+													<th>Balance</th>
+													<th>Estatus</th>
+													<th>Acciones</th>
+												</tr>
+											</thead>
+											<tbody>
+												{{#each activas}}
+												<tr>
+													<td><a href="#">{{direccion}}</a></td>
+													<td>{{saldo}}</td>
+													<td>{{status}}</td>	
+													<td>
+													<button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#archivar_direccion"><span class="fa fa-remove"></span></button>
+													</td>
+													
+												</tr>
+												{{/each}}											
+											</tbody>
+									</table>
+									{{else}} 
+									   <div class="text-center">
+									   		<h4>No existen registros</h4>
+									   </div>
+									{{/if}}
+									</div>
+
+									</div>
+
+									<div role="tabpanel" class="tab-pane fade" id="bitcoin" aria-labelledby="profile-tab">
+                         			<div class="table-responsive ">
+									{{#if direcciones}}
+										<table class="table table-hover table-condensed">
+											<thead>
+												<tr>
+													<th>Direccion</th>
+													<th>Balance</th>
+													<th>Estatus</th>
+													<th>Acciones</th>
+												</tr>
+											</thead>
+											<tbody>
+												{{#each direcciones}}
+												<tr>
+													<td><a href="#">{{direccion}}</a></td>
+													<td>{{saldo}}</td>
+													<td>{{status}}</td>
+													<td>
+														<button class="btn btn-success btn-sm" data-toggle="modal" data-target="#unarchivar_direccion"><span class="fa fa-check-circle"></span></button>
+													</td>
+													
+												</tr>
+												{{/each}}											
+											</tbody>
+									</table>
+									{{else}} 
+									   <div class="text-center">
+									   		<h4>No existen registros</h4>
+									   </div>
+									{{/if}}
+									</div>
+		                  			</div>
+								</div>
+							</div>
+							<div class="panel-footer">
+								<div class="row">
+									<div class="col-md-6"><span class="panel-note"><i class="fa fa-clock-o"></i>Ultima semana</span></div>
+								</div>
+							</div>
+							</div>
+							<!-- END CONDENSED TABLE -->
+							<br>
+						</div>
+					</div>					
+				</div>
+			</div>
+			<!-- END MAIN CONTENT -->
+		</div>
+		<!-- END MAIN -->
+		<div class="clearfix"></div>
+		<div id="archivar_direccion" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<form >
+					<div class="modal-body">						
+				          	Esta seguro de deshabilitar la direccion seleccionada?
+		  			</div>
+			  		<div class="modal-footer">
+			  			<button type="submit" class="btn btn-primary">Aceptar</button>
+			  			<button type="button" class="btn btn-danger" data-dismiss="modal" class="btn">Salir</button>
+
+			  		</div>
+			  		</form>
+				</div>
+			</div>  
+		</div>
+
+		<div id="unarchivar_direccion" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+			<div class="modal-dialog modal-dialog-centered" role="document">
+				<div class="modal-content">
+					<form>
+					<div class="modal-body">						
+				          	Esta seguro de habilitar la direccion seleccionada?
+		  			</div>
+			  		<div class="modal-footer">
+			  			<button type="submit" class="btn btn-primary">Aceptar</button>
+			  			<button type="button" class="btn btn-danger" data-dismiss="modal" class="btn">Salir</button>
+
+			  		</div>
+			  		</form>
+				</div>
+			</div>  
+		</div>
+		{{> footer }}
+	</div>
+	<!-- END WRAPPER -->

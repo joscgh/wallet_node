@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<title>{{titulo}}</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	<!-- VENDOR CSS -->
+	<link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="../assets/vendor/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="../assets/vendor/linearicons/style.css">
+	<link rel="stylesheet" href="../assets/vendor/toastr/toastr.min.css">
+	<link rel="stylesheet" href="../assets/vendor/chartist/css/chartist-custom.css">
+	<!-- MAIN CSS -->
+	<link rel="stylesheet" type="text/css" href="../assets/css/main.css">
+
+	<link rel="stylesheet" type="text/css" href="../assets/css/style.css">
+	<!-- GOOGLE FONTS >
+	<link href="assets/css/css.css" rel="stylesheet"-->
+	
+</head>
+
+<body>
+		<div id="toast" name="toast" class="{{alert_status}}">
+			<div id="img"><button class="btn btn-link" onclick="ocultar()">X</button></div>
+			<div id="desc">{{alert_message}}</div>
+
+		</div>
+		<script src="../assets/vendor/jquery/jquery.min.js"></script>
+	    <script src="../assets/vendor/bootstrap/js/bootstrap.min.js"></script>
+	    <!--script src="../assets/vendor/chartist/js/chartist.min.js"></script>
+	    <script src="../assets/vendor/chartist/data.js"></script-->
+	    {{{body}}}
+		<script src="../assets/scripts/klorofil-common.js"></script>
+		<script src="../assets/vendor/jquery-slimscroll/jquery.slimscroll.min.js"></script>
+
+		<script type="text/javascript">
+	        function ocultar() {
+	        var x = document.getElementById("toast")
+	        $("#toast").removeClass( "show" );
+	      	}		
+
+	      	function copia_portapapeles(){ 
+	      		var text = document.getElementById("my-address");
+	      		var x = document.getElementById("toast");
+	      		var x = document.getElementById("toast");
+
+   				text.select(); 
+   				
+   				try {
+           			// Copiando el texto seleccionado
+           			var successful = document.execCommand('copy');
+     
+           			if(successful)
+           			{
+           				$("#desc").html("Texto copiado!");
+           				console.log('Copiado!');
+           			} 
+           			else{
+           				$("#desc").html("El texto no fue copiado!");
+           				console.log('Incapaz de copiar!');
+           			} 
+
+           			x.className = "show";
+           			setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+       			} catch (err) {
+           			console.log('Browser no soportado!');
+       			} 
+
+			} 
+
+      	</script>
+</body>
+	
+</html>
