@@ -20,7 +20,7 @@ var secret = require('../config/secret'),
 		let url = secret.url + secret.balance + "api_key=" + secret.api_key;
 
 		console.log(url);
-		request(url, cb)
+		//request(url, cb)
 	}
 
 	WalletRequest.request_create = (datos, cb) => {

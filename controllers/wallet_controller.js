@@ -1,4 +1,8 @@
 'use strict'
+var Web3 = require('web3');
+var web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
+
+console.log(web3.eth.syncing);
 
 var WalletRequest = require('./wallet_request');
 var WalletModel = require('../models/wallet_model'),
@@ -26,10 +30,14 @@ var WalletModel = require('../models/wallet_model'),
 					if(rows.length == 0){
 
 						//realizo la consulta a la API
-						WalletRequest.request_create({email : req.body.signup_email,
+						var acc = web3.personal.newAccount('12345678');
+						web3.eth.contract();
+    					//web3.eth.personal.importRawKey(pkey,password);
+						console.log(acc);
+						/*WalletRequest.request_create({email : req.body.signup_email,
 						password : req.body.signup_password} , (err, response, body) => {
 						
-							if(err){
+							/*if(err){
 					  			let locals = {
 									title : "Error en la conexion con la URL",
 									descripcion : "Compruebe su conexion de red",
@@ -42,17 +50,14 @@ var WalletModel = require('../models/wallet_model'),
 					  		else{
 					  			console.log(body)
 					  			var resul = JSON.parse(body);
-					  			console.log(resul)	
+					  			console.log(resul)	*/
 
-					  			if(!resul.status){
+					  			if(acc){
 					  				let usuario = {
-										nombre : req.body.signup_name,
-										email : req.body.signup_email,
+										address : acc,
+										privateKey : "",
+										correo : req.body.signup_email,
 										password : req.body.signup_password,
-										guid : resul.guid,
-										address : resul.address,
-										label : resul.label,
-										link : resul.link
 									}	
 
 									console.log(usuario)
@@ -108,8 +113,7 @@ var WalletModel = require('../models/wallet_model'),
 					  			}
 					  			
 					  		}
-				    	});/**/
-					}
+				    	//});/**/
 					else{
 						let locals = {
 							alert_message : "El email ya se encuentra registrado",
@@ -159,19 +163,20 @@ var WalletModel = require('../models/wallet_model'),
 						res.render('index', locals)
 					}
 					else{
-						/*
+						
 						datos = rows[0];
-						req.session.nombre = datos.nombre;
-						req.session.id_usuario = datos.id_usuario;
+						//req.session.nombre = datos.nombre;
+						/*req.session.id_usuario = datos.id;
 						req.session.address = datos.address;
 						req.session.alert_message = "";
 						req.session.alert_status = '';
 						req.session.login = true;
-		  				res.redirect('dashboard');/**/
+		  				res.redirect('dashboard');*/
 
-		  				console.log("consultado el saldo del usuario")
-						WalletRequest.request_balance((err, response, body) => {
-							if(err){
+		  				console.log("consultado el saldo del usuario --> ")
+		  				var balance = web3.eth.getBalance(rows[0].address);
+						/*WalletRequest.request_balance((err, response, body) => {
+						/*	if(err){
 					  			let locals = {
 									alert_message : "Compruebe su conexion de red",
 									alert_status : 'show',
@@ -184,16 +189,16 @@ var WalletModel = require('../models/wallet_model'),
 					  			console.log(resul)
 					  			
 					  			if(!resul.status){
-					  				datos = rows[0];
-									req.session.nombre = datos.nombre;
-									req.session.id_usuario = datos.id_usuario;
+					  				datos = rows[0];*/
+									//req.session.nombre = datos.nombre;
+									
+									req.session.id_usuario = datos.id;
 									req.session.address = datos.address;
-									req.session.bitcoin = body;
 									req.session.login = true;
 									req.session.alert_message = "";
 									req.session.alert_status = '';
 					  				res.redirect('dashboard');
-					  			}
+					  			/*}
 					  			else{
 					  				console.log("faltan variables");
 					  				let locals = {
@@ -205,7 +210,7 @@ var WalletModel = require('../models/wallet_model'),
 					  			}
 							}
 							
-						})/**/
+						*///})/**/
 					}
 				}
 			})
@@ -224,7 +229,65 @@ var WalletModel = require('../models/wallet_model'),
 
 		var ruta = req.body.ruta;
 		//realizo la consulta a la URL de la API
-		WalletRequest.request_send({address : req.body.recipient,
+		var fine = web3.personal.unlockAccount(req.body.from,'12345678');
+
+		if(!web3.isAddress(req.body.recipient))
+		{
+				req.session.alert_message = 'Error en la transaccion';
+				req.session.alert_status = 'show';
+				console.log('Error en la transaccion');
+				res.redirect(ruta)		
+	  		}	
+		
+		if(fine)
+		web3.eth.sendTransaction({
+				from: req.body.from,
+    			to: req.body.recipient,
+    			value: web3.toWei(req.body.quantity, 'ether'),
+    			gas : req.body.gasli,
+                gasPrice: web3.toWei(req.body.gaspr, "gwei")
+    		}, 
+    		function(err,transactionHash){
+  			if(!err)
+    		{	
+    			console.log(transactionHash); // "0x7f9fade1c0d57a7af66ab4ead7c2eb7b11a91385"
+	  			var fee =  req.body.gasli * web3.fromWei(req.body.gaspr,"gwei");
+	  			console.log("fee : "+fee)
+	  				let payment = {
+	  					de : req.body.from,
+						para : req.body.recipient,
+						hash: transactionHash,
+						value :  web3.fromWei(web3.toWei(req.body.quantity, 'ether'),"ether"),
+					}
+
+					console.log(payment)
+
+					WalletModel.insert_transaction(payment, (err) => {
+						if(err){
+							req.session.alert_message = 'Error en la comunicacion con la BD';
+							req.session.alert_status = 'show';				
+							console.log(err)
+							res.redirect(ruta);	
+						}
+						else{
+							req.session.alert_message = "exito";
+							req.session.alert_status = 'show';	
+							console.log("Transaccion Aprobada y Registrada en BD")
+							res.redirect(ruta);	
+						}
+					})
+    		}
+    		else 
+    			{
+				req.session.alert_message = 'Error en la transaccion';
+				req.session.alert_status = 'show';
+
+				console.log(err)
+				res.redirect(ruta)		
+	  		}
+
+		});
+		/*WalletRequest.request_send({address : req.body.recipient,
 					mount : req.body.quantity,
 					fee : req.body.comision} , (err, response, body) => {
 
@@ -274,9 +337,9 @@ var WalletModel = require('../models/wallet_model'),
 					req.session.alert_message = 'Error de Sintaxis en la consulta HTTP';
 					req.session.alert_status = 'show';	
 					res.redirect(ruta);	
-	  			}/**/  			
+	  			}		
 	  		}
-    	})
+    	})*/
 	}
 
 	WalletController.request_newaddress = (req, res, next) => {
@@ -334,10 +397,11 @@ var WalletModel = require('../models/wallet_model'),
 
 	WalletController.get_dashboard = (req, res, next) => {
 		if(req.session.login){
-	      	WalletModel.get_all_transactions_by_id_user(req.session.id_usuario, (err, rows) => {
+	      	WalletModel.get_all_transactions(req.session.address, (err, rows) => {
 				if(err){
+					console.log(err);
 					res.render('dashboard', { titulo: "Panel de Usuario", 
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
 					bitcoin : req.session.bitcoin,
 					activa : "dashboard",
@@ -350,10 +414,11 @@ var WalletModel = require('../models/wallet_model'),
 				}
 				else{					
 					res.render('dashboard', { titulo: "Panel de Usuario", 
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
-					bitcoin : req.session.bitcoin,
+					//bitcoin : req.session.bitcoin,
 					transacciones : rows,
+					accounts:web3.eth.accounts,
 					activa : "dashboard",
 					alert_message : req.session.alert_message,
 					alert_status : req.session.alert_status,
@@ -397,13 +462,13 @@ var WalletModel = require('../models/wallet_model'),
 	}
 
 	WalletController.get_transactions = (req, res, next) => {
-		
+		console.log(req.session.id_usuario);
 		if(req.session.login){
-			WalletModel.get_all_transactions_by_id_user(req.session.id_usuario, (err, rows) => {
+			WalletModel.get_all_transactions_by_id_user(req.session.address, (err, rows) => {
 				if(err){	
 					res.render('transactions', {
 					titulo: "Panel de Usuario - Transacciones",
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
 					bitcoin : req.session.bitcoin,
 					activa : "transactions",
@@ -413,15 +478,15 @@ var WalletModel = require('../models/wallet_model'),
 
 					req.session.alert_status = "";
 					req.session.alert_message = "";				
-					console.log(err);
+					//console.log(err);
 				}
 				else{
 					res.render('transactions', { 
 					//titulo: req.params.currency,
 					titulo: "Panel de Usuario - Transacciones",
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
-					bitcoin : req.session.bitcoin,
+					//bitcoin : req.session.bitcoin,
 					transacciones : rows,
 					alert_message : req.session.alert_message,
 					alert_status : req.session.alert_status,
@@ -445,13 +510,13 @@ var WalletModel = require('../models/wallet_model'),
 	WalletController.get_addresses = (req, res, next) => {
 
 		if(req.session.login){
-			WalletModel.get_all_address_by_id_user(req.session.id_usuario, (err, rows) => {
+			WalletModel.get_all_address(req.session.id_usuario, (err, rows) => {
 				console.log(rows);
 				if(err){
 					res.render('addresses', { titulo: "Panel de Usuario - Direcciones", 
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
-					bitcoin : req.session.bitcoin,
+					//bitcoin : req.session.bitcoin,
 					alert_message : 'Error en la comunicacion con la BD',
 					alert_status : 'show',
 					activa : "addresses",
@@ -479,11 +544,11 @@ var WalletModel = require('../models/wallet_model'),
 
 
 					res.render('addresses', { titulo: "Panel de Usuario - Direcciones", 
-					nombre : req.session.nombre,
+					//nombre : req.session.nombre,
 					address : req.session.address,
-					bitcoin : req.session.bitcoin,
-					activas : activas,
-					inactivas: inactivas,
+					//bitcoin : req.session.bitcoin,
+					activas : rows,
+					//inactivas: inactivas,
 					alert_message : req.session.alert_message,
 					alert_status : req.session.alert_status,
 					activa : "addresses",
@@ -536,5 +601,23 @@ var WalletModel = require('../models/wallet_model'),
 
 		//next();
 	}
+
+	
+function ethereum_market(callback)
+{
+    let curl = require('curlrequest');
+    let options = {url:"https://api.coinmarketcap.com/v1/ticker/ethereum/"}
+    curl.request(options,(err,response)=>{
+        
+        if(err){console.log(err); return;}
+        
+        var out = response;
+        out = out.split(",");
+        aux = out[4].replace('"price_usd": "',"");
+        aux = aux.trim();
+        aux = aux.replace('"',"");
+        callback(aux);
+    });
+}
 
 module.exports = WalletController

@@ -7,23 +7,23 @@ var connection = require('./wallet_connection'),
 
 	WalletModel.validate_email  = (data, cb) => {
 		console.log(data)
-		connection.query('SELECT * FROM usuarios WHERE email = ?', data, cb)
+		connection.query('SELECT * FROM account WHERE correo = ?', data, cb)
 	}
 
 	WalletModel.login = (data, cb) => {
-		connection.query('SELECT * FROM usuarios WHERE email = ? AND password = ?', data, cb)
+		connection.query('SELECT * FROM account WHERE correo = ? AND password = ?', data, cb)
 	}
 
 	WalletModel.insert_user = (data, cb) => {
-		connection.query('INSERT INTO usuarios SET ?', data, cb)
+		connection.query('INSERT INTO account SET ?', data, cb)
 	}
 
 	WalletModel.insert_address = (data, cb) => {
-		connection.query('INSERT INTO direcciones SET ?', data, cb)
+		connection.query('INSERT INTO address SET ?', data, cb)
 	}
 
 	WalletModel.insert_transaction = (data, cb) => {
-		connection.query('INSERT INTO transacciones SET ?', data, cb)
+		connection.query('INSERT INTO transaction SET ?', data, cb)
 	}
 
 	WalletModel.update_user = (data, cb) => {
@@ -35,15 +35,15 @@ var connection = require('./wallet_connection'),
 	}
 
 	WalletModel.get_name_user_by_id = (data, cb) => {
-		connection.query('SELECT nombre FROM usuarios WHERE id_usuario = ? ', data, cb)
+		connection.query('SELECT nombre FROM account WHERE id = ? ', data, cb)
 	}
 
 	WalletModel.get_user_by_email = (data, cb) => {
-		connection.query('SELECT * FROM usuarios WHERE email = ? ', data, cb)
+		connection.query('SELECT * FROM account WHERE correo = ? ', data, cb)
 	}
 
 	WalletModel.get_main_address = (data, cb) => {
-		connection.query('SELECT * FROM usuarios WHERE id_usuario = ? AND principal = 1 ', data, cb)
+		connection.query('SELECT * FROM account WHERE id = ?', data, cb)
 	}
 
 	WalletModel.get_all_secundary_address = (data, cb) => {
@@ -56,13 +56,21 @@ var connection = require('./wallet_connection'),
 	}
 
 	WalletModel.get_all_transactions_by_currency_and_id_user = (data, cb) => {
-		connection.query('SELECT * FROM transacciones WHERE id_currency = ? AND id_usuario = ?', data, cb)
+		connection.query('SELECT * FROM transaction WHERE id_currency = ? AND id_usuario = ?', data, cb)
 	}
 
 	WalletModel.get_all_transactions_by_id_user = (data, cb) => {
-		connection.query('SELECT para, cantidad, descripcion, fee, status, nombre AS moneda, ' +
-		'DATE_FORMAT(fecha, "%d/%m/%Y") AS fecha FROM transacciones INNER JOIN currency ON transacciones.id_currency = currency.id_currency ' + 
-		'WHERE id_usuario = ?', data, cb)
+		connection.query('SELECT * ' +
+		' FROM transaction INNER JOIN account ON transaction.de = account.address ' + 
+		'WHERE account.address = ?', data, cb)
+	}
+	WalletModel.get_all_transactions = (data, cb) => {
+		connection.query('SELECT * ' +
+		' FROM transaction', data, cb)
 	}
 
+	WalletModel.get_all_address = (data, cb) => {
+		connection.query('SELECT * ' +
+		' FROM account', data, cb)
+	}
 module.exports = WalletModel

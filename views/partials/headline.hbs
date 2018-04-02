@@ -32,7 +32,7 @@
 		        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
 		          <span aria-hidden="true">&times;</span>
 		        </button>
-		        <h3 class="modal-title" id="exampleModalLongTitle"><i class="lnr lnr-download"></i> Recibir Bitcoins</h3>
+		        <h3 class="modal-title" id="exampleModalLongTitle"><i class="lnr lnr-download"></i> Recibir Ethereum</h3>
 		      </div>
 		      <div class="modal-body">
 		        <form>
@@ -61,7 +61,7 @@
 	        <div class="modal-content">
 	          <div class="modal-header">
 	            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	            <h3 class="modal-title" id="titulo_modal"><i class="lnr lnr-upload"></i> Enviar Bitcoin</h3>
+	            <h3 class="modal-title" id="titulo_modal"><i class="lnr lnr-upload"></i> Enviar Ethereum</h3>
 	          </div>
 	          <div class="modal-body" id= "modal-body-detalles" name ="modal-body-detalles">
 	          		<form method="POST" action="/send">
@@ -70,7 +70,7 @@
 		          			  <label for="dropdownMenu1" class="col-form-label">Currency:</label>
 		          			  <br>
 							  <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-							     <i class="fa fa-bitcoin"></i> Bitcoin
+							     <i class="fa fa-ethereum"></i> Ethereum
 							    <span class="caret"></span>
 							  </button>
 							  	<!--ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
@@ -80,11 +80,38 @@
 						<div>
 						<br>
 
+					<div class="form-group">
+			          <label for="from" class="col-form-label">De:</label>
+			          	<div class="input-group">
+			            	<input type="hidden" class="form-control" id="ruta" name="ruta" value ="{{activa}}"required>
+			            	<select id="from" name="from" class="form-control">
+			            		{{#each accounts}}
+			            			{{#if address}}
+			            				<option selected value="{{this}}">{{this}}</option>
+			            			{{else}}
+			            				<option value="{{this}}">{{this}}</option>
+			            			{{/if}}
+			            		{{/each}}
+			            	</select>
+			            	<!--<input type="text" class="form-control" id="from" name="from" value="{{ address }}" required>-->
+			            	<span class="input-group-addon" id="sizing-addon3"><i class="fa fa-qrcode"></i></span>
+			          	</div>
+			          </div>
+
 			          <div class="form-group">
 			          <label for="recipient" class="col-form-label">Para:</label>
 			          	<div class="input-group">
-			            	<input type="hidden" class="form-control" id="ruta" name="ruta" value ="{{activa}}"required>
-			            	<input type="text" class="form-control" id="recipient" name="recipient" required>
+			            	
+			            	<input type="text" class="form-control" id="recipient" name="recipient" required list="addresses">
+			            	<datalist id="addresses" name="from" class="form-control">
+			            		{{#each accounts}}
+			            			{{#if address}}
+			            				<option selected value="{{this}}">{{this}}</option>
+			            			{{else}}
+			            				<option value="{{this}}">{{this}}</option>
+			            			{{/if}}
+			            		{{/each}}
+			            	</datalist>
 			            	<span class="input-group-addon" id="sizing-addon3"><i class="fa fa-qrcode"></i></span>
 			          	</div>
 			          </div>
@@ -92,21 +119,28 @@
 			          <div class="form-group">
 			          <label for="quantity" class="col-form-label">Monto:</label>
 			          	<div class="input-group">
-			            	
-			            	<input type="text" class="form-control" id="quantity" name="quantity" required>
-			            	<span class="input-group-addon" id="sizing-addon3">BTC</span>
+			            	<input type="number" class="form-control" id="quantity" name="quantity" required step="any" min="0">
+			            	<span class="input-group-addon" id="sizing-addon3">ETH</span>
+			            	<input type="number" class="form-control" id="quantity_usd" name="quantity_usd" step="0.001" min="0">
+			            	<span class="input-group-addon" id="sizing-addon3">USD</span>
 			          	</div>
 			          </div>
 
+			          <div class="form-group">
+			            <label for="gasli" class="col-form-label">Gas Limit:</label>
+						<input type="number" id="gasli" name="gasli" class="form-control" value="21000" required min="21000">
+			          </div>
+			        <div class="form-group">
+			            <label for="gaspr" class="col-form-label">Gas Price:</label>
+						<input type="number" id="gaspr" name="gaspr" class="form-control" value="18" required min="18" step="0.1">
+			        </div>
 			          <div class="form-group">
 			            <label for="message" class="col-form-label">Descripcion: <i class="lnr lnr-question-circle"></i></label>
 			            <textarea class="form-control" id="message" name="message"></textarea>
 			          </div>
 			          <div class="form-group">
-			            <label for="comision" class="col-form-label">Comision de Transaccion:</label>
-						<input type="text" id="comision" name="comision" class="form-control" value="0" required>
+			          	comision : <span id="fee"></span>ETH / <span id="fee_usd"></span>USD
 			          </div>
-
     					<br>
 			          <!--div class="form-group"-->			
 			          <button type="submit" class="btn btn-primary btn-lg btn-block">ENVIAR</button>
@@ -118,7 +152,43 @@
 	      </div><!-- /.modal-dialog -->
 	    </div><!-- /.modal -->
 
+	<script>
+	var aux="";
+	$.ajax({
+        url: 'https://api.coinmarketcap.com/v1/ticker/ethereum/',
+        success: function(data){
+        	var out = JSON.stringify(data);
+        	out = out.split(",");
+        	aux = out[4].replace('"price_usd":"',"");
+        	aux = aux.replace('"','');
+        }
+	});
+	/*document.getElementById("fee").innerHTML = data;
+	document.getElementById("fee_usd").innerHTML =  (parseFloat(aux) * parseFloat(data)).toFixed(2);*/
 
+	document.getElementById("quantity").addEventListener("keydown",function(){
+    	var valor = (parseFloat(aux) * parseFloat(this.value));
+    	if(isNaN(valor))valor = "";
+    	document.getElementById("quantity_usd").value = valor.toFixed(2);
+    });
+    document.getElementById("quantity_usd").addEventListener("keydown",function(){
+    	var valor = (parseFloat(this.value) / parseFloat(aux));
+    	if(isNaN(valor))valor = "";
+    	document.getElementById("quantity").value = valor.toFixed(18);
+    });
+    /*document.getElementById("price").addEventListener("keyup",function(){
+    	socket.emit("fee",document.getElementById("limit").value,this.value);
+    });
+    document.getElementById("limit").addEventListener("keyup",function(){
+    	socket.emit("fee",this.value,document.getElementById("price").value);
+    });
+     document.getElementById("price").addEventListener("change",function(){
+    	socket.emit("fee",document.getElementById("limit").value,this.value);
+    });
+    document.getElementById("limit").addEventListener("change",function(){
+    	socket.emit("fee",this.value,document.getElementById("price").value);
+    });*/
+	</script>
 	    
 
 	</div>

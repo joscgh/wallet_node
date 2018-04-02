@@ -1,3 +1,7 @@
+datalist {
+    display: none !important;
+}
+
 #toast {
     visibility: hidden;
     max-width: 500px;
